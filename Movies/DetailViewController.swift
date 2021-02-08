@@ -1,0 +1,66 @@
+//
+//  DetailViewController.swift
+//  Movies
+//
+//  Created by Alikhan Tuxubayev on 2/8/21.
+//
+
+import UIKit
+import WebKit
+
+class DetailViewController: UIViewController {
+
+    @IBOutlet weak var webView: WKWebView!
+    @IBOutlet weak var descriptionLabel: UILabel!
+    var movieID: Int = 0
+    var movieTitle: String = ""
+    var movieDescription: String = ""
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        getMovieDetails()
+        descriptionLabel.text = movieDescription
+
+        // Do any additional setup after loading the view.
+    }
+   
+    func getMovieDetails(){
+        let api_token = "6c78da2cf41529284dc65d510d302bca"
+        let url = URL(string: "https://api.themoviedb.org/3/movie/\(self.movieID)/videos?api_key=\(api_token)")
+        
+        var request = URLRequest(url: url!, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
+        request.httpMethod = "GET"
+        request.allHTTPHeaderFields = [
+            "cahe-control": "no-cache"
+        ]
+        
+        let session = URLSession.shared
+        session.dataTask(with: request) { (rawdata, response, error) in
+        
+            if let error = error {
+                print(#function, "error", error.localizedDescription)
+                return
+            }
+            guard let data =  rawdata,
+                  let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+                print(#function, "error", "\(String(describing: rawdata))")
+                return
+            }
+            guard let trailersJSON = json["results"] as? [[String: Any]], let key = trailersJSON[0]["key"] as? String else {
+                return
+            }
+            
+            DispatchQueue.main.async() {
+                self.playVideo(key)
+            }
+        }.resume()
+    }
+        func playVideo(_ key: String){
+            let url = URLRequest(url: URL(string:"https://www.youtube.com/embed/\(key)?playsinline=1?autoplay=1")!)
+            webView.load(url)
+            
+        }
+    
+}
