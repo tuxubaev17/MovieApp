@@ -15,15 +15,29 @@ class DetailViewController: UIViewController {
     var movieID: Int = 0
     var movieTitle: String = ""
     var movieDescription: String = ""
-    
+    var favMovies: [String] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         getMovieDetails()
         descriptionLabel.text = movieDescription
+       
+        let button: UIBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "star"), style: .plain, target: self, action: #selector(addToFav))
+        self.navigationItem.rightBarButtonItem = button
 
-        // Do any additional setup after loading the view.
+        
+        favMovies = UserDefaults.standard.stringArray(forKey: "Movie") ?? []
+        favMovies.forEach({
+            if movieTitle == $0{
+                button.image = UIImage(systemName: "star.filled")
+            }
+        })
+    }
+    
+    @objc func addToFav(){
+        favMovies.append(movieTitle)
+        UserDefaults.standard.setValue(favMovies, forKey: "Movie")
     }
    
     func getMovieDetails(){
